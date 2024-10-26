@@ -14,9 +14,6 @@ LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
 LANGCHAIN_API_KEY="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"
 LANGCHAIN_PROJECT="pr-mealy-length-60"
 
-os.environ["OPENAI_API_KEY"] = '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'
-
-
 class Plan(BaseModel):
     """Plan to follow in future"""
 
