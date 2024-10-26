@@ -8,7 +8,6 @@ import re
 
 embeddings = OpenAIEmbeddings()
 
-
 def read_gitignore_patterns(directory_path):
     """Reads .gitignore file and returns a list of patterns to ignore."""
     gitignore_path = os.path.join(directory_path, '.gitignore')
