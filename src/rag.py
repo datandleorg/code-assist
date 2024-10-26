@@ -5,6 +5,11 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 import os
 import re
+from dotenv import load_dotenv
+
+load_dotenv()
+
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY", "default_api_key")
 
 embeddings = OpenAIEmbeddings()
 
