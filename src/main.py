@@ -13,6 +13,7 @@ LANGCHAIN_TRACING_V2=True
 LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
 LANGCHAIN_API_KEY="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"
 LANGCHAIN_PROJECT="pr-mealy-length-60"
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 class Plan(BaseModel):
     """Plan to follow in future"""

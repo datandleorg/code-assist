@@ -6,7 +6,6 @@ from langchain_openai import OpenAIEmbeddings
 import os
 import re
 
-os.environ["OPENAI_API_KEY"] = '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'
 embeddings = OpenAIEmbeddings()
 
 
