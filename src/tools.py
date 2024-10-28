@@ -1,8 +1,9 @@
 from pathlib import Path
 from langchain_core.tools import tool
-import os
 import subprocess
 import tempfile
+
+from src.rag import getContext
 
 @tool
 def run_bash_command(command: str):
@@ -63,13 +64,15 @@ def create_or_update_file(path: str, content: str):
     except Exception as e:
         return f"An error occurred: {e}"
 
-
-
-def init_tools():
+@tool
+def retrieve_code_context(query):
     """
-    Initializes all tools and returns a list of the tool objects.
+    Retrieves the code base context for the given query.
     
+    Args:
+        query (str): The query to decide whether to retrieve the context or not.
+
     Returns:
-        list[Tool]: A list of all available tool objects.
+        str: The context retrieved from the query.
     """
-    return [create_or_update_file, run_bash_command]
+    return getContext(query)
