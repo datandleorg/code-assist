@@ -86,8 +86,14 @@ def record_audio_on_key(key_combination=('cmd', 'r'), duration=10, sample_rate=4
     anim_thread.start()
 
     # Set up the keyboard listener
-    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        listener.join()
+    listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+    listener.start()
+
+    # Wait for the user to finish recording
+    listener.join()
+
+    # Stop the animation thread
+    anim_thread.join()
 
     # Return the filename once the recording is complete
     return file_name

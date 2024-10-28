@@ -5,6 +5,7 @@ from typing_extensions import Literal
 from langgraph.graph import StateGraph, START, END, MessagesState
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import AIMessage, SystemMessage, BaseMessage, HumanMessage
+from codev1.src.utils import cprint
 from codev1.src.tools import create_or_update_file, retrieve_code_context, run_bash_command
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import tools_condition
@@ -21,6 +22,7 @@ class Plan(BaseModel):
 class DoRetrieve(BaseModel):
     """Simple state."""
     should_retrieve_context: bool
+    should_plan: bool
 
 class CodeGraphState(MessagesState):
     """Simple state."""
@@ -28,6 +30,7 @@ class CodeGraphState(MessagesState):
     context: str
     plan: str
     show_msg: bool
+    should_plan: bool
 
 
 main_tools = [create_or_update_file, run_bash_command]
@@ -52,25 +55,31 @@ def should_retrieve_context(state):
         """You are a helpful AI code assistant. 
         Check if the user query needs to fetch the code base context
         IF the query is irrelevant to anything related to code base context, then respond to the user query.
-        IF the query is relevant to code base context, then retrieve the code base context and respond to the user query."""
+        IF the query is relevant to code base context, then retrieve the code base context and respond to the user query.
+        
+        also
+
+        If the query needs planning, then respond with True to should_plan
+        If the query does not need planning, then respond with False to should_plan
+        """
     )
     messages = [system_prompt] + state["messages"]
     model = short_model.with_structured_output(DoRetrieve)
     response = model.invoke(messages)
 
-    if response.should_retrieve_context:
-        return { "context": retrieve_code_context.invoke(state["question"]), "show_msg": False }
+    cprint(json.dumps(response.__dict__), "user")
     
     return {
-        "context": "",
-        "show_msg": False
+        "context": retrieve_code_context.invoke(state["question"]) if response.should_retrieve_context else "",
+        "show_msg": False,
+        "should_plan": response.should_plan
     }
 
 def call_llm(state):
     question = HumanMessage(content=f"""
     question: {state["question"]}
     context: {state["context"]}
-    plan: {state["plan"]}                     
+    plan: { state["plan"] if state["should_plan"] else ""}                     
     """)
     new_messages = state["messages"] + [question]
     response = main_model.invoke(new_messages)
@@ -108,7 +117,6 @@ def planner(
     }
 
 def human_review_node(state):
-    
     pass
 
 def run_tool(state):
@@ -147,6 +155,11 @@ def route_after_human(state) -> Literal["run_tool", "call_llm"]:
         return "run_tool"
     else:
         return "call_llm"
+    
+
+def should_plan(state) -> Literal["planner", "call_llm"]:
+    return state["should_plan"]
+
 # Set up memory
 memory = MemorySaver()
 
@@ -158,9 +171,8 @@ def init_graph():
     builder.add_node(run_tool)
     builder.add_node(human_review_node)
     builder.add_edge(START, "should_retrieve_context")
-    builder.add_edge("should_retrieve_context", "planner")
+    builder.add_conditional_edges("should_retrieve_context", should_plan, {True: "planner", False: "call_llm"})
     builder.add_edge("planner", "call_llm")
-    builder.add_edge("call_llm", END)
     builder.add_conditional_edges("call_llm", route_after_llm)
     builder.add_conditional_edges("human_review_node", route_after_human)
     builder.add_edge("run_tool", "call_llm")

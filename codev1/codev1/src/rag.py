@@ -88,7 +88,6 @@ def retrieve(query):
 
 def getContext(query):
     results = retrieve(query)
-    print(results)
     context = ""
     for res in results:
         if res[1] > 0.6:

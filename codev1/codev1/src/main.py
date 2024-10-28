@@ -19,19 +19,24 @@ graph = init_graph()
 cprint("Graph is up ....", "success")
 
 
-def map_msg_to_role(msg):
+def map_print(msg):
     if isinstance(msg, AIMessage):
-        return "assistant"
+        if len(msg.tool_calls) > 0:
+            msg.pretty_print()
+        else:
+            cprint(f"======================Assistant========================",  "assistant")
+            cprint(msg.content, "assistant")
     elif isinstance(msg, HumanMessage):
-        return "user"
+        cprint(f"======================Human========================",  "user")
+        cprint(msg.content, "user")
     elif isinstance(msg, ToolMessage):
-        return "info"
+        cprint(f"======================Tool========================",  "info")
+        cprint(msg.content, "info")
     else:
         return msg
 
 def initialize():
     
-    cprint("Human: ", "user")
     query = get_user_input()
 
     # query = input("Human: ")
@@ -56,12 +61,10 @@ def initialize():
                 if is_tool:
                     cprint("Confirm Action: ", "user")
                     confirm = get_user_input()
-
                     if "yes" in confirm.lower() or "y" in confirm.lower():
                         for event in graph.stream(None, thread, stream_mode="values"):
                             last_message = event['messages'][-1]
-                            cprint(f"======================{map_msg_to_role(last_message)}======================",  map_msg_to_role(last_message))
-                            cprint(last_message.content, map_msg_to_role(last_message))
+                            map_print(last_message)
                
                         if isinstance(last_message, AIMessage):
                             if len(last_message.tool_calls) > 0:
@@ -100,8 +103,7 @@ def initialize():
                         # Let's now continue executing from here
                         for event in graph.stream(None, thread, stream_mode="values"):
                             last_message = event['messages'][-1]
-                            cprint(f"======================{map_msg_to_role(last_message)}======================",  map_msg_to_role(last_message))
-                            cprint(last_message.content, map_msg_to_role(last_message))
+                            map_print(last_message)
                             handle_event(graph, last_message)
 
                     
@@ -112,8 +114,8 @@ def initialize():
             if isinstance(event["messages"][-1], AIMessage):
                 play_audio("msg")
             last_message = event['messages'][-1]
-            cprint(f"======================{map_msg_to_role(last_message)}======================",  map_msg_to_role(last_message))
-            cprint(last_message.content, map_msg_to_role(last_message))
+            map_print(last_message)
+
         handle_event(graph, last_message)  
 
     initialize()   

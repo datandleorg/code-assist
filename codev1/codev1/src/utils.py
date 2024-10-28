@@ -17,13 +17,13 @@ def printer(text, color="WHITE", bg="BLACK"):
 
 def cprint(text, role="system"):
     if role == "user":
-        printer(text, color="BLACK", bg="CYAN")
+        printer(text, color="CYAN", bg="BLACK")
     elif role == "assistant":
         printer(text, color="WHITE", bg="BLUE")
     elif role == "context":
         printer(text, color="BLACK", bg="WHITE")
     elif role == "input":
-        printer(text, color="WHITE", bg="BLACK")
+        printer(text, color="CYAN", bg="BLACK")
     elif role == "error":
         printer(text, color="RED", bg="BLACK")
     elif role == "info":
@@ -34,13 +34,13 @@ def cprint(text, role="system"):
         printer(text, color="CYAN", bg="BLACK")
     
 
-cprint("========user============\n user are ready .... \n hello", "user")
-cprint("========user============\n assistant are ready .... \n hello", "assistant")
-cprint("========user============\n context are ready .... \n hello", "context")
-cprint("========user============\n input are ready .... \n hello", "input")
-cprint("========user============\n error are ready .... \n hello", "error")
-cprint("========user============\n success are ready .... \n hello", "success")
-cprint("========user============\n default are ready .... \n hello", "s")
+# cprint("========user============\n user are ready .... \n hello", "user")
+# cprint("========user============\n assistant are ready .... \n hello", "assistant")
+# cprint("========user============\n context are ready .... \n hello", "context")
+# cprint("========user============\n input are ready .... \n hello", "input")
+# cprint("========user============\n error are ready .... \n hello", "error")
+# cprint("========user============\n success are ready .... \n hello", "success")
+# cprint("========user============\n default are ready .... \n hello", "s")
 
 
 # import sounddevice as sd

@@ -1,7 +1,10 @@
 from pathlib import Path
+import sys
+import time
 from langchain_core.tools import tool
 import subprocess
 import tempfile
+import os
 
 from codev1.src.rag import getContext
 
@@ -16,27 +19,18 @@ def run_bash_command(command: str):
     Returns:
         str: The output of the bash command.
     """
-    # Create a temporary file to store the output
     temp_file = tempfile.NamedTemporaryFile(delete=False)
 
-    # # Modify the command to write output to the temporary file
     script = f'tell application "Terminal" to do script "{command} > {temp_file.name} 2>&1"'
     subprocess.run(["osascript", "-e", script])
 
-    # # Wait for user input to allow command execution to complete (this is manual)
-    input("Press Enter after the command finishes...")
-
-    # # Read the output from the temporary file
+    time.sleep(0.5)
+    # Read the output from the temporary file
     with open(temp_file.name, "r") as f:
         output = f.read()
 
-    # # Return the captured output
     return output
-    # osascript_command = f'tell application "Terminal" to do script "{command}"'
-    # subprocess.run(["osascript", "-e", osascript_command])
-
     # return os.popen(command).read()
-    return "Command executed successfully"
 
 @tool
 def create_or_update_file(path: str, content: str):
