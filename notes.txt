@@ -1,1 +1,12 @@
 1. How to omit loading RAG for dependency files and unwanted files
+
+
+Challenges
+1. Use this for frontend development 
+2. Use this for backend development
+3. Use this for devOps
+4. Use this for product Management
+5. Use this for product analyst
+
+
+
