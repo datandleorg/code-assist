@@ -1,5 +1,6 @@
 from colorama import Fore, Back, Style, init
 import os 
+from playwright.sync_api import sync_playwright
 
 init()
 
@@ -33,6 +34,32 @@ def cprint(text, role="system"):
     else:
         printer(text, color="CYAN", bg="BLACK")
     
+
+
+def take_screenshot(url: str, output_path: str):
+    try:
+        with sync_playwright() as p:
+            # Launch a browser (e.g., Chromium)
+            browser = p.chromium.launch()
+            # Open a new browser context and page
+            context = browser.new_context()
+            page = context.new_page()
+            
+            # Navigate to the specified URL
+            page.goto(url)
+            
+            # Take a screenshot and save it to the specified path
+            page.screenshot(path=output_path)
+            
+            # Close the browser
+            browser.close()
+    except:
+        # if the app is not running, return an empty image
+        with open(output_path, 'wb') as f:
+            f.write(b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjPHtg6AAAAABJRU5ErkJggg==')
+
+# Example usage
+# take_screenshot('https://www.youtube.com/', 'example_screenshot.png')
 
 # cprint("========user============\n user are ready .... \n hello", "user")
 # cprint("========user============\n assistant are ready .... \n hello", "assistant")

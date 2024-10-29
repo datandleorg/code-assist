@@ -1,15 +1,14 @@
+import base64
 import os
 from typing import List
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 from langgraph.graph import StateGraph, START, END, MessagesState
 from langgraph.checkpoint.memory import MemorySaver
-from langchain_core.messages import AIMessage, SystemMessage, BaseMessage, HumanMessage
-from codev1.src.utils import cprint
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
+from codev1.src.utils import cprint, take_screenshot
 from codev1.src.tools import create_or_update_file, retrieve_code_context, run_bash_command
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import tools_condition
-from langgraph.graph.message import add_messages
 import json
 
 class Plan(BaseModel):
@@ -23,6 +22,7 @@ class DoRetrieve(BaseModel):
     """Simple state."""
     should_retrieve_context: bool
     should_plan: bool
+    app_screenshot: bool
 
 class CodeGraphState(MessagesState):
     """Simple state."""
@@ -31,6 +31,7 @@ class CodeGraphState(MessagesState):
     plan: str
     show_msg: bool
     should_plan: bool
+    app_screenshot: bool = True
 
 
 main_tools = [create_or_update_file, run_bash_command]
@@ -61,8 +62,15 @@ def should_retrieve_context(state):
 
         If the query needs planning, then respond with True to should_plan
         If the query does not need planning, then respond with False to should_plan
+
+        also
+
+        If the current project is frontend then decide if we need screenshot input
+        If the query needs screenshot feedback of the frontend app, then respond with True to app_screenshot
+        If the query does not need screenshot feedback of the frontend app, then respond with False to app_screenshot
         """
     )
+
     messages = [system_prompt] + state["messages"]
     model = short_model.with_structured_output(DoRetrieve)
     response = model.invoke(messages)
@@ -72,15 +80,38 @@ def should_retrieve_context(state):
     return {
         "context": retrieve_code_context.invoke(state["question"]) if response.should_retrieve_context else "",
         "show_msg": False,
-        "should_plan": response.should_plan
+        "should_plan": response.should_plan,
+        "app_screenshot": True
     }
 
+
 def call_llm(state):
-    question = HumanMessage(content=f"""
-    question: {state["question"]}
-    context: {state["context"]}
-    plan: { state["plan"] if state["should_plan"] else ""}                     
-    """)
+    image = ""
+    if state["app_screenshot"]:
+        take_screenshot('http://localhost:3000', 'example_screenshot.png')
+        with open('example_screenshot.png', 'rb') as f:
+            image = image = base64.b64encode(f.read()).decode('utf-8')
+
+    if state["app_screenshot"] and image != "":
+        question = HumanMessage(content=[
+                    {"type": "text", "text": f"""
+                            question: {state["question"]}
+                            context: {state["context"]}
+                            plan: { state["plan"] if state["should_plan"] else ""}                     
+                     """},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image}"
+                        },
+                    },
+                ])
+    else:
+        question = HumanMessage(content=f"""
+        question: {state["question"]}
+        context: {state["context"]}
+        plan: { state["plan"] if state["should_plan"] else ""}                     
+        """)
     new_messages = state["messages"] + [question]
     response = main_model.invoke(new_messages)
     new_messages = new_messages + [response]

@@ -59,9 +59,12 @@ def initialize():
             if graph.get_state(thread).next:
                 is_tool = len(last_message.tool_calls) > 0
                 if is_tool:
-                    cprint("Confirm Action: ", "user")
-                    confirm = get_user_input()
-                    if "yes" in confirm.lower() or "y" in confirm.lower():
+                    confirm = input("Confirm Action: ")
+                    if confirm == "":
+                        confirm = "yes"
+                    else:
+                        confirm = "no"
+                    if "yes" in confirm :
                         for event in graph.stream(None, thread, stream_mode="values"):
                             last_message = event['messages'][-1]
                             map_print(last_message)
@@ -70,8 +73,6 @@ def initialize():
                             if len(last_message.tool_calls) > 0:
                                 handle_event(graph, last_message)
                         
-                        loadRAG()
-
                     else:
                         state = graph.get_state(thread)
                         tool_calls= state.values["messages"][-1].tool_calls

@@ -19,7 +19,8 @@ setup(
         'tiktoken',
         'sounddevice',
         'pynput',
-        'numpy' 
+        'numpy',
+        'playwright' 
         ],  # Add any dependencies here
     entry_points={
         'console_scripts': [
