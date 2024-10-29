@@ -7,6 +7,10 @@ Issues
 4. using text in voice mode is throwing issues 
 5. handling terminal outputs 
 
+tasks:
+1. Embed only changed files and folders
+2. change the way we handle audio , avoid key listener and use input 
+
 
 Challenges
 1. Use this for frontend development 

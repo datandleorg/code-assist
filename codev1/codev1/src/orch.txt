@@ -1,0 +1,29 @@
+
+
+State = {
+    prompt,
+    plan,
+    context
+}
+
+get input
+return { prompt: ""}
+should_retrieve_context
+return {
+    context
+}
+planner
+return {
+    plan
+}
+call_llm
+{
+    messages
+}
+run_tool
+{
+    messages,
+    plan: "",
+    context: "",
+    question: ""
+}
