@@ -1,4 +1,11 @@
-1. How to omit loading RAG for dependency files and unwanted files
+1. How to omit loading RAG for dependency files and unwanted files - done
+
+Issues
+1. llm is not wary of where it is running and the appropriate folders
+2. Tool Message function skipped is not captured in the messages 
+3. toggle voice mode and text mode
+4. using text in voice mode is throwing issues 
+5. handling terminal outputs 
 
 
 Challenges

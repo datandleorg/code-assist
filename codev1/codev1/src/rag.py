@@ -70,7 +70,7 @@ def getDocs():
     all_files_content = read_all_files(directory_path)
     documents = []
     for file_path, content in all_files_content.items():
-        documents.append(Document(page_content=f"contents of filepath = {file_path} \n {content}", metadata={"source": file_path}))
+        documents.append(Document(page_content=f"contents of filepath = {file_path} \n {content}", metadata={"source": file_path }))
     
     return documents
 

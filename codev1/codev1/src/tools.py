@@ -19,18 +19,18 @@ def run_bash_command(command: str):
     Returns:
         str: The output of the bash command.
     """
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    # temp_file = tempfile.NamedTemporaryFile(delete=False)
 
-    script = f'tell application "Terminal" to do script "{command} > {temp_file.name} 2>&1"'
-    subprocess.run(["osascript", "-e", script])
+    # script = f'tell application "Terminal" to do script "{command} > {temp_file.name} 2>&1"'
+    # subprocess.run(["osascript", "-e", script])
 
-    time.sleep(0.5)
-    # Read the output from the temporary file
-    with open(temp_file.name, "r") as f:
-        output = f.read()
+    # time.sleep(0.5)
+    # # Read the output from the temporary file
+    # with open(temp_file.name, "r") as f:
+    #     output = f.read()
 
-    return output
-    # return os.popen(command).read()
+    # return output
+    return os.popen(command).read()
 
 @tool
 def create_or_update_file(path: str, content: str):

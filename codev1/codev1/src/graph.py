@@ -37,7 +37,7 @@ main_tools = [create_or_update_file, run_bash_command]
 
 long_model = ChatOpenAI(model="gpt-4o")
 short_model = ChatOpenAI(model="gpt-4o-mini")
-plan_model = ChatOpenAI(model="o1-mini-2024-09-12").with_structured_output(Plan)
+plan_model = ChatOpenAI(model="gpt-4o-mini").with_structured_output(Plan)
 main_model = long_model.bind_tools(main_tools)
 
 def should_retrieve_context(state):
