@@ -8,6 +8,10 @@ import re
 from langchain_chroma import Chroma
 from codev1.src.utils import cprint
 
+from langchain_text_splitters import (
+    Language,
+    RecursiveCharacterTextSplitter,
+)
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 
@@ -35,16 +39,26 @@ vector_store = Chroma(
 #     embedding=embeddings,
 # )
 
-def read_gitignore_patterns(directory_path):
-    """Reads .gitignore file and returns a list of patterns to ignore."""
-    gitignore_path = os.path.join(directory_path, '.gitignore')
-    patterns = []
+# def read_file_patterns(extensions_to_include=None):
+#     """Reads .gitignore file and returns a list of patterns to ignore, except for specific extensions."""
+#     # gitignore_path = os.path.join(directory_path, '.gitignore')
+#     patterns = []
 
-    if os.path.exists(gitignore_path):
-        with open(gitignore_path, 'r') as gitignore_file:
-            patterns = [line.strip() for line in gitignore_file if line.strip() and not line.startswith('#')]
+#     if extensions_to_include is None:
+#         extensions_to_include = []
 
-    return patterns
+#     # if os.path.exists(gitignore_path):
+#     #     with open(gitignore_path, 'r') as gitignore_file:
+#     #         patterns = [line.strip() for line in gitignore_file if line.strip() and not line.startswith('#')]
+
+#     # Add a pattern to ignore all files
+#     patterns.append('*')
+
+#     # Remove the ignore pattern for specified extensions
+#     for ext in extensions_to_include:
+#         patterns.append(f'!*.{ext.lstrip(".")}')
+
+#     return patterns
 
 def is_ignored(file_path, ignore_patterns):
     """Checks if a file matches any of the ignore patterns."""
@@ -69,14 +83,14 @@ def is_binary(file_path):
 def read_all_files(directory_path):
     files_content = {}
     # Get ignore patterns from .gitignore file
-    ignore_patterns = read_gitignore_patterns(directory_path)
+    file_patterns = [".py"]
 
     for root, _, files in os.walk(directory_path):
         for file in files:
             file_path = os.path.join(root, file)
             
             # Check if the file should be ignored
-            if is_ignored(file_path, ignore_patterns) or is_binary(file_path):
+            if not is_ignored(file_path, file_patterns) or is_binary(file_path):
                 continue
               
               
@@ -138,7 +152,20 @@ def getDocs():
     all_files_content = read_all_files(directory_path)
     documents = []
     for file_path, content in all_files_content.items():
-        documents.append(Document(page_content=f"contents of filepath = {file_path} \n {content}", metadata={"source": file_path, "file_path": file_path }))
+        python_splitter = RecursiveCharacterTextSplitter.from_language(
+            language=Language.PYTHON, chunk_size=3000, chunk_overlap=100
+        )
+        python_docs = python_splitter.create_documents([content], metadatas=[{"source": file_path}])
+        documents = documents + python_docs
+
+        # print(len(documents))
+        # print(documents)
+
+        # return False
+        # print(python_docs)
+
+        # return False
+        # documents.append(Document(page_content=f"contents of filepath = {file_path} \n {content}", metadata={"source": file_path, "file_path": file_path }))
     
     return documents
 
@@ -152,21 +179,21 @@ def loadRAG():
 
 def retrieve(query):
     results = vector_store.similarity_search_with_score(
-        query=query, k=1
+        query=query, k=10
     )
-    
     return results
 
 def getContext(query):
     results = retrieve(query)
     context = ""
     for res, score in results:
-        context += f"""{res.page_content} - \n score: {score}"""
+        if score < 1.5:
+            context += f"""{res.page_content} - score : {score}\n"""
     
     cprint("===============================context==============================","context")
     cprint(context, "context")
     return context
 
 
-# loadRAG()
-# getContext("getContext")
+loadRAG()
+getContext("how to invoke map_print")
